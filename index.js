@@ -1,4 +1,4 @@
-const debug = require('debug')('dat')
+const debug = require('debug')('dwebx')
 const url = require('url')
 const https = require('https')
 const Emitter = require('events')
@@ -87,16 +87,16 @@ module.exports = function (datDnsOpts) {
             })
             debug('dns-over-http resolved', name, 'to', res.key)
           } catch (e) {
-            // ignore, we'll try .well-known/dat next
+            // ignore, we'll try .well-known/dwebx next
             res = false
           }
         }
 
         if (!res && !noWellknownDat) {
-          // do a .well-known/dat lookup
+          // do a .well-known/dwebx lookup
           res = yield fetchWellKnownRecord(name)
           if (res.statusCode === 0 || res.statusCode === 404) {
-            debug('.well-known/dat lookup failed for name:', name, res.statusCode, res.err)
+            debug('.well-known/dwebx lookup failed for name:', name, res.statusCode, res.err)
             datDns.emit('failed', {
               method: 'well-known',
               name,
@@ -105,7 +105,7 @@ module.exports = function (datDnsOpts) {
             mCache.set(name, false, 60) // cache the miss for a minute
             throw new Error('DNS record not found')
           } else if (res.statusCode !== 200) {
-            debug('.well-known/dat lookup failed for name:', name, res.statusCode)
+            debug('.well-known/dwebx lookup failed for name:', name, res.statusCode)
             datDns.emit('failed', {
               method: 'well-known',
               name,
@@ -121,7 +121,7 @@ module.exports = function (datDnsOpts) {
             name,
             key: res.key
           })
-          debug('.well-known/dat resolved', name, 'to', res.key)
+          debug('.well-known/dwebx resolved', name, 'to', res.key)
         }
 
         // cache
@@ -237,10 +237,10 @@ function parseDnsOverHttpsRecord (datDns, name, body) {
 
 function fetchWellKnownRecord (name) {
   return new Promise((resolve, reject) => {
-    debug('.well-known/dat lookup for name:', name)
+    debug('.well-known/dwebx lookup for name:', name)
     https.get({
       host: name,
-      path: '/.well-known/dat',
+      path: '/.well-known/dwebx',
       timeout: 2000
     }, function (res) {
       res.setEncoding('utf-8')
@@ -266,15 +266,15 @@ function parseWellknownDatRecord (datDns, name, body) {
 
   // parse url
   try {
-    key = /^dat:\/\/([0-9a-f]{64})/i.exec(lines[0])[1]
+    key = /^dwebx:\/\/([0-9a-f]{64})/i.exec(lines[0])[1]
   } catch (e) {
-    debug('.well-known/dat failed', name, 'Must be a dat://{key} url')
+    debug('.well-known/dwebx failed', name, 'Must be a dwebx://{key} url')
     datDns.emit('failed', {
       method: 'well-known',
       name,
-      err: 'Record did not provide a valid dat://{key} url'
+      err: 'Record did not provide a valid dwebx://{key} url'
     })
-    throw new Error('Invalid .well-known/dat record, must provide a dat://{key} url')
+    throw new Error('Invalid .well-known/dwebx record, must provide a dwebx://{key} url')
   }
 
   // parse ttl
@@ -288,7 +288,7 @@ function parseWellknownDatRecord (datDns, name, body) {
       name,
       err: 'Failed to parse TTL line, error: ' + e.toString()
     })
-    debug('.well-known/dat failed to parse TTL for %s, line: %s, error:', name, lines[1], e)
+    debug('.well-known/dwebx failed to parse TTL for %s, line: %s, error:', name, lines[1], e)
   }
   if (!Number.isSafeInteger(ttl) || ttl < 0) {
     ttl = DEFAULT_DAT_DNS_TTL
