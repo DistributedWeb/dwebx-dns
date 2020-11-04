@@ -1,25 +1,25 @@
 {
   "name": "dwebx-dns",
   "version": "2.0.0",
-  "description": "Issue DNS lookups for DWebX archives using HTTPS requests to the target host.",
+  "description": "Module for resolving a centralized domain name to a dWeb key.",
   "main": "index.js",
   "scripts": {
     "test": "node test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/datprotocol/dwebx-dns.git"
+    "url": "https://github.com/distributedweb/dwebx-dns.git"
   },
   "keywords": [
     "dwebx",
     "dns"
   ],
-  "author": "Paul Frazee <pfrazee@gmail.com>",
+  "author": "Peeps Labs <peepslabs.gmail.com>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/datprotocol/dwebx-dns/issues"
+    "url": "https://github.com/distributedweb/dwebx-dns/issues"
   },
-  "homepage": "https://github.com/datprotocol/dwebx-dns#readme",
+  "homepage": "https://dwebx.org",
   "dependencies": {
     "call-me-maybe": "^1.0.1",
     "concat-stream": "^1.6.0",
