@@ -5,10 +5,10 @@ Issue DNS lookups for DWebX archives using HTTPS requests to the target host. Ke
 ## API
 
 ```js
-var datDns = require('dwebx-dns')()
+var dwebxDns = require('dwebx-dns')()
 
 // or, if you have a custom protocol
-var datDns = require('dwebx-dns')({
+var dwebxDns = require('dwebx-dns')({
     recordName: /* name of .well-known file */
     protocolRegex: /* RegExp object for custom protocol */,
     hashRegex: /* RegExp object for custom hash i.e. */,
@@ -16,44 +16,44 @@ var datDns = require('dwebx-dns')({
 })
 
 // example: 
-var cabalDns = require('dwebx-dns')({
+var dmemoDns = require('dwebx-dns')({
     recordName: 'dmemo',
     hashRegex: /^[0-9a-f]{64}?$/i,
     protocolRegex: /^dmemo:\/\/([0-9a-f]{64})/i,
-    txtRegex: /^"?cabalkey=([0-9a-f]{64})"?$/i
+    txtRegex: /^"?dmemokey=([0-9a-f]{64})"?$/i
 })
 
 // resolve a name: pass the hostname by itself
-datDns.resolveName('foo.com', function (err, key) { ... })
-datDns.resolveName('foo.com').then(key => ...)
+dwebxDns.resolveName('foo.com', function (err, key) { ... })
+dwebxDns.resolveName('foo.com').then(key => ...)
 
 // dont use cached 'misses'
-datDns.resolveName('foo.com', {ignoreCachedMiss: true})
+dwebxDns.resolveName('foo.com', {ignoreCachedMiss: true})
 
 // dont use the cache at all
-datDns.resolveName('foo.com', {ignoreCache: true})
+dwebxDns.resolveName('foo.com', {ignoreCache: true})
 
 // dont use dns-over-https
-datDns.resolveName('foo.com', {noDnsOverHttps: true})
+dwebxDns.resolveName('foo.com', {noDnsOverHttps: true})
 
 // dont use .well-known/dwebx
-datDns.resolveName('foo.com', {noWellknownDat: true})
+dwebxDns.resolveName('foo.com', {noWellknownDat: true})
 
 // list all entries in the cache
-datDns.listCache()
+dwebxDns.listCache()
 
 // clear the cache
-datDns.flushCache()
+dwebxDns.flushCache()
 
 // configure the DNS-over-HTTPS host used
-var datDns = require('dwebx-dns')({
+var dwebxDns = require('dwebx-dns')({
   dnsHost: 'dns.google.com',
   dnsPath: '/resolve'
 })
 
 // use a persistent fallback cache
 // (this is handy for persistent dns data when offline)
-var datDns = require('dwebx-dns')({
+var dwebxDns = require('dwebx-dns')({
   persistentCache: {
     read: async (name, err) => {
       // try lookup
@@ -67,9 +67,9 @@ var datDns = require('dwebx-dns')({
 })
 
 // emits some events, mainly useful for logging/debugging
-datDns.on('resolved', ({method, name, key}) => {...})
-datDns.on('failed', ({method, name, err}) => {...})
-datDns.on('cache-flushed', () => {...})
+dwebxDns.on('resolved', ({method, name, key}) => {...})
+dwebxDns.on('failed', ({method, name, err}) => {...})
+dwebxDns.on('cache-flushed', () => {...})
 ```
 
 ## Spec

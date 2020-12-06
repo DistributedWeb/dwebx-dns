@@ -49,7 +49,7 @@ module.exports = function (datDnsOpts) {
     dnsPath = datDnsOpts.dnsPath
   }
 
-  var datDns = new Emitter()
+  var dwebxDns = new Emitter()
 
   function resolveName (name, opts, cb) {
     if (typeof opts === 'function') {
@@ -90,11 +90,11 @@ module.exports = function (datDnsOpts) {
         if (!noDnsOverHttps) {
           try {
             // do a DNS-over-HTTPS lookup
-            res = yield fetchDnsOverHttpsRecord(datDns, name, { host: dnsHost, path: dnsPath })
+            res = yield fetchDnsOverHttpsRecord(dwebxDns, name, { host: dnsHost, path: dnsPath })
 
             // parse the record
-            res = parseDnsOverHttpsRecord(datDns, name, res.body, dnsTxtRegex)
-            datDns.emit('resolved', {
+            res = parseDnsOverHttpsRecord(dwebxDns, name, res.body, dnsTxtRegex)
+            dwebxDns.emit('resolved', {
               method: 'dns-over-https',
               name,
               key: res.key
@@ -111,7 +111,7 @@ module.exports = function (datDnsOpts) {
           res = yield fetchWellKnownRecord(name, recordName)
           if (res.statusCode === 0 || res.statusCode === 404) {
             debug('.well-known/' + recordName + ' lookup failed for name:', name, res.statusCode, res.err)
-            datDns.emit('failed', {
+            dwebxDns.emit('failed', {
               method: 'well-known',
               name,
               err: 'HTTP code ' + res.statusCode + ' ' + res.err
@@ -120,7 +120,7 @@ module.exports = function (datDnsOpts) {
             throw new Error('DNS record not found')
           } else if (res.statusCode !== 200) {
             debug('.well-known/' + recordName + ' lookup failed for name:', name, res.statusCode)
-            datDns.emit('failed', {
+            dwebxDns.emit('failed', {
               method: 'well-known',
               name,
               err: 'HTTP code ' + res.statusCode
@@ -129,8 +129,8 @@ module.exports = function (datDnsOpts) {
           }
 
           // parse the record
-          res = parseWellknownDatRecord(datDns, name, res.body, protocolRegex, recordName)
-          datDns.emit('resolved', {
+          res = parseWellknownDatRecord(dwebxDns, name, res.body, protocolRegex, recordName)
+          dwebxDns.emit('resolved', {
             method: 'well-known',
             name,
             key: res.key
@@ -158,22 +158,22 @@ module.exports = function (datDnsOpts) {
   }
 
   function flushCache () {
-    datDns.emit('cache-flushed')
+    dwebxDns.emit('cache-flushed')
     mCache.flush()
   }
 
-  datDns.resolveName = resolveName
-  datDns.listCache = listCache
-  datDns.flushCache = flushCache
-  return datDns
+  dwebxDns.resolveName = resolveName
+  dwebxDns.listCache = listCache
+  dwebxDns.flushCache = flushCache
+  return dwebxDns
 }
 
-function fetchDnsOverHttpsRecord (datDns, name, { host, path }) {
+function fetchDnsOverHttpsRecord (dwebxDns, name, { host, path }) {
   return new Promise((resolve, reject) => {
     // ensure the name is a FQDN
     if (!name.includes('.')) {
       debug('dns-over-https failed', name, 'Not an a FQDN')
-      datDns.emit('failed', {
+      dwebxDns.emit('failed', {
         method: 'dns-over-https',
         name,
         err: 'Name is not a FQDN'
@@ -204,14 +204,14 @@ function fetchDnsOverHttpsRecord (datDns, name, { host, path }) {
   })
 }
 
-function parseDnsOverHttpsRecord (datDns, name, body, dnsTxtRegex) {
+function parseDnsOverHttpsRecord (dwebxDns, name, body, dnsTxtRegex) {
   // decode to obj
   var record
   try {
     record = JSON.parse(body)
   } catch (e) {
     debug('dns-over-https failed', name, 'did not give a valid JSON response')
-    datDns.emit('failed', {
+    dwebxDns.emit('failed', {
       method: 'dns-over-https',
       name,
       err: 'Failed to parse JSON response'
@@ -223,7 +223,7 @@ function parseDnsOverHttpsRecord (datDns, name, body, dnsTxtRegex) {
   var answers = record['Answer']
   if (!answers || !Array.isArray(answers)) {
     debug('dns-over-https failed', name, 'did not give any TXT answers')
-    datDns.emit('failed', {
+    dwebxDns.emit('failed', {
       method: 'dns-over-https',
       name,
       err: 'Did not give any TXT answers'
@@ -246,7 +246,7 @@ function parseDnsOverHttpsRecord (datDns, name, body, dnsTxtRegex) {
   })
   if (!answers[0]) {
     debug('dns-over-https failed', name, 'did not give any TXT answers')
-    datDns.emit('failed', {
+    dwebxDns.emit('failed', {
       method: 'dns-over-https',
       name,
       err: 'Did not give any TXT answers'
@@ -281,9 +281,9 @@ function fetchWellKnownRecord (name, recordName) {
   })
 }
 
-function parseWellknownDatRecord (datDns, name, body, protocolRegex, recordName) {
+function parseWellknownDatRecord (dwebxDns, name, body, protocolRegex, recordName) {
   if (!body || typeof body !== 'string') {
-    datDns.emit('failed', {
+    dwebxDns.emit('failed', {
       method: 'well-known',
       name,
       err: 'Empty response'
@@ -299,7 +299,7 @@ function parseWellknownDatRecord (datDns, name, body, protocolRegex, recordName)
     key = protocolRegex.exec(lines[0])[1]
   } catch (e) {
     debug('.well-known/' + recordName + ' failed', name, 'must conform to ' + protocolRegex)
-    datDns.emit('failed', {
+    dwebxDns.emit('failed', {
       method: 'well-known',
       name,
       err: 'Record did not conform to ' + protocolRegex
@@ -313,7 +313,7 @@ function parseWellknownDatRecord (datDns, name, body, protocolRegex, recordName)
       ttl = +(/^ttl=(\d+)$/i.exec(lines[1])[1])
     }
   } catch (e) {
-    datDns.emit('failed', {
+    dwebxDns.emit('failed', {
       method: 'well-known',
       name,
       err: 'Failed to parse TTL line, error: ' + e.toString()
